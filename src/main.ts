@@ -1,5 +1,12 @@
+import type { Component } from 'vue'
 import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import App from '@/App.vue'
+import { pinia } from '@/plugins/pinia'
+import { router } from '@/plugins/router'
+import '@/style.css'
 
-createApp(App).mount('#app')
+const app = createApp(App as Component)
+
+app.use(router)
+app.use(pinia)
+app.mount('#app')
