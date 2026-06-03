@@ -35,20 +35,6 @@ const previewUrls = ref<string[]>([])
 const items = ref<ImageItem[]>([])
 let nextId = 1
 
-function handleFileSelect(event: Event) {
-  const target = event.target as HTMLInputElement
-  if (!target.files || target.files.length === 0)
-    return
-
-  const newFiles = Array.from(target.files)
-  for (const file of newFiles) {
-    selectedFiles.value.push(file)
-    previewUrls.value.push(URL.createObjectURL(file))
-  }
-
-  target.value = ''
-}
-
 function handleRemoveFile(index: number) {
   if (previewUrls.value[index]) {
     URL.revokeObjectURL(previewUrls.value[index])
@@ -132,12 +118,11 @@ function resetAll() {
                 class="transition-all duration-300 ease-in-out"
               >
                 <OperationFileUpload
-                  :selected-files="selectedFiles"
-                  :preview-urls="previewUrls"
+                  v-model:selected-files="selectedFiles"
+                  v-model:preview-urls="previewUrls"
                   :api-key="geminiStore.apiKey"
-                  @file-select="handleFileSelect"
-                  @extract="startExtraction"
-                  @remove-file="handleRemoveFile"
+                  @click:extract="startExtraction"
+                  @click:remove-file="handleRemoveFile"
                 />
               </div>
 
@@ -167,7 +152,7 @@ function resetAll() {
                     :state="item.state"
                     :response="item.response"
                     :error="item.error"
-                    @retry="retryItem(item.id)"
+                    @click:retry="retryItem(item.id)"
                   />
                 </div>
               </div>

@@ -17,7 +17,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  retry: []
+  'click:retry': []
 }>()
 
 const renderedMarkdown = computed(() => {
@@ -61,7 +61,7 @@ const renderedMarkdown = computed(() => {
           variant="ghost"
           size="sm"
           class="gap-1.5 h-7"
-          @click="emit('retry')"
+          @click="emit('click:retry')"
         >
           <RefreshCw class="h-3.5 w-3.5" />
           Retry

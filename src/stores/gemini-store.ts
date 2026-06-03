@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { aiService } from '@/services/gemini-service'
 
 const STORAGE_KEY = 'gemini.encryptedKey'
@@ -34,33 +34,6 @@ export const useGeminiStore = defineStore('gemini', () => {
   const apiKey = computed<string>(() => encryptedKey.value)
   const decryptedApiKey = computed<string>(() => aiService.getDecryptedKey())
 
-  watch(encryptedKey, (value) => {
-    if (value) {
-      localStorage.setItem(STORAGE_KEY, value)
-    }
-    else {
-      localStorage.removeItem(STORAGE_KEY)
-    }
-  })
-
-  watch(selectedModel, (value) => {
-    if (value) {
-      localStorage.setItem(STORAGE_KEY_MODEL, value)
-    }
-    else {
-      localStorage.removeItem(STORAGE_KEY_MODEL)
-    }
-  })
-
-  watch(systemPrompt, (value) => {
-    if (value) {
-      localStorage.setItem(STORAGE_KEY_PROMPT, value)
-    }
-    else {
-      localStorage.removeItem(STORAGE_KEY_PROMPT)
-    }
-  })
-
   if (encryptedKey.value) {
     aiService.initializeKey(encryptedKey.value)
   }
@@ -70,19 +43,23 @@ export const useGeminiStore = defineStore('gemini', () => {
     const encrypted = aiService.encryptKey(rawKey)
     encryptedKey.value = encrypted
     aiService.initializeKey(encrypted)
+    localStorage.setItem(STORAGE_KEY, encrypted)
   }
 
   function setModel(model: string): void {
     selectedModel.value = model
+    localStorage.setItem(STORAGE_KEY_MODEL, model)
   }
 
   function setSystemPrompt(prompt: string): void {
     systemPrompt.value = prompt
     aiService.setSystemPrompt(prompt)
+    localStorage.setItem(STORAGE_KEY_PROMPT, prompt)
   }
 
   function clearApiKey(): void {
     encryptedKey.value = ''
+    localStorage.removeItem(STORAGE_KEY)
   }
 
   return {
