@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import OperationApiKeyCard from '@/components/molecules/operation-api-key-card.vue'
 import OperationFileUpload from '@/components/molecules/operation-file-upload.vue'
 import OperationProcessLoading from '@/components/molecules/operation-process-loading.vue'
 import OperationProcessResult from '@/components/molecules/operation-process-result.vue'
+import { aiService } from '@/services/gemini-service'
 import { useGeminiStore } from '@/stores/gemini-store'
 
 const geminiStore = useGeminiStore()
@@ -11,25 +12,16 @@ const geminiStore = useGeminiStore()
 type AppState = 'idle' | 'loading' | 'result'
 const currentState = ref<AppState>('idle')
 
-const isKeyExpanded = ref(true)
 const localKeyInput = ref('')
 
 const selectedFile = ref<File | null>(null)
 const imagePreviewUrl = ref<string | null>(null)
 const markdownOutput = ref<string>('')
 
-onMounted(() => {
-  if (geminiStore.apiKey) {
-    localKeyInput.value = geminiStore.apiKey
-    isKeyExpanded.value = false
-  }
-})
-
 function saveApiKey() {
   if (!localKeyInput.value.trim())
     return
   geminiStore.setApiKey(localKeyInput.value.trim())
-  isKeyExpanded.value = false
 }
 
 function handleFileSelect(event: Event) {
@@ -49,10 +41,15 @@ async function startExtraction() {
 
   currentState.value = 'loading'
 
-  setTimeout(() => {
-    markdownOutput.value = `### Extracted Underlined Text\n\n- The quick brown fox\n- Jumps over the lazy dog\n\n*Note: This is simulated markdown output.*`
+  try {
+    markdownOutput.value = await aiService.generate([selectedFile.value])
+  }
+  catch (error) {
+    console.error('Extraction failed:', error)
+  }
+  finally {
     currentState.value = 'result'
-  }, 2000)
+  }
 }
 
 function resetProcess() {

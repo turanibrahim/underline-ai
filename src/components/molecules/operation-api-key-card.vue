@@ -27,6 +27,7 @@ init()
 
 function handleSave() {
   emit('click:save')
+  openModel.value = false
 }
 </script>
 
