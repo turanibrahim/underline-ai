@@ -2,9 +2,10 @@
 import DOMPurify from 'dompurify'
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-vue-next'
 import { marked } from 'marked'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import ImagePreviewModal from '@/components/molecules/operation-image-preview-modal.vue'
 
 type ItemState = 'pending' | 'loading' | 'success' | 'error'
 
@@ -26,6 +27,8 @@ const renderedMarkdown = computed(() => {
   const rawHtml = marked.parse(props.response) as string
   return DOMPurify.sanitize(rawHtml)
 })
+
+const isPreviewOpen = ref(false)
 </script>
 
 <template>
@@ -43,11 +46,18 @@ const renderedMarkdown = computed(() => {
         </span>
       </div>
       <div class="flex-1 min-h-32 max-h-72 bg-muted/30 rounded-md overflow-hidden flex items-center justify-center">
-        <img
-          :src="previewUrl"
-          :alt="file.name"
-          class="max-h-72 max-w-full object-contain"
+        <button
+          type="button"
+          class="flex items-center justify-center w-full h-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md"
+          :aria-label="`Preview ${file.name}`"
+          @click="isPreviewOpen = true"
         >
+          <img
+            :src="previewUrl"
+            :alt="file.name"
+            class="max-h-72 max-w-full object-contain"
+          >
+        </button>
       </div>
     </div>
 
@@ -97,4 +107,11 @@ const renderedMarkdown = computed(() => {
       </div>
     </div>
   </div>
+
+  <ImagePreviewModal
+    v-model:open="isPreviewOpen"
+    :src="previewUrl"
+    :alt="file.name"
+    :title="file.name"
+  />
 </template>

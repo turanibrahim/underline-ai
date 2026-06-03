@@ -2,8 +2,8 @@
 import { Image as ImageIcon, Settings as SettingsIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
 import OperationFileUpload from '@/components/molecules/operation-file-upload.vue'
-import OperationImageListItem from '@/components/molecules/operation-image-list-item.vue'
 import OperationSettingsForm from '@/components/molecules/operation-settings-form.vue'
+import OperationImageListItem from '@/components/organisms/operation-image-list-item.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
