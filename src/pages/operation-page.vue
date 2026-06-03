@@ -30,7 +30,7 @@ interface ImageItem {
 const geminiStore = useGeminiStore()
 
 const pageState = ref<PageState>('idle')
-const selectedFiles = ref<File[]>([])
+const files = ref<File[]>([])
 const previewUrls = ref<string[]>([])
 const items = ref<ImageItem[]>([])
 let nextId = 1
@@ -39,7 +39,7 @@ function handleRemoveFile(index: number) {
   if (previewUrls.value[index]) {
     URL.revokeObjectURL(previewUrls.value[index])
   }
-  selectedFiles.value.splice(index, 1)
+  files.value.splice(index, 1)
   previewUrls.value.splice(index, 1)
 }
 
@@ -60,10 +60,10 @@ async function runForItem(item: ImageItem) {
 }
 
 async function startExtraction() {
-  if (!selectedFiles.value.length || !geminiStore.apiKey)
+  if (!files.value.length || !geminiStore.apiKey)
     return
 
-  items.value = selectedFiles.value.map((file, index) => ({
+  items.value = files.value.map((file, index) => ({
     id: nextId++,
     file,
     previewUrl: previewUrls.value[index],
@@ -88,7 +88,7 @@ function resetAll() {
   for (const url of previewUrls.value) {
     URL.revokeObjectURL(url)
   }
-  selectedFiles.value = []
+  files.value = []
   previewUrls.value = []
   items.value = []
   pageState.value = 'idle'
@@ -118,7 +118,7 @@ function resetAll() {
                 class="transition-all duration-300 ease-in-out"
               >
                 <OperationFileUpload
-                  v-model:selected-files="selectedFiles"
+                  v-model:files="files"
                   v-model:preview-urls="previewUrls"
                   :api-key="geminiStore.apiKey"
                   @click:extract="startExtraction"
