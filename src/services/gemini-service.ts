@@ -34,6 +34,10 @@ class AIService {
     this.systemPrompt = prompt
   }
 
+  public getDecryptedKey(): string {
+    return this.decryptedApiKey
+  }
+
   private async fileToGenerativePart(file: File): Promise<{ inlineData: { data: string, mimeType: string } }> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -51,13 +55,17 @@ class AIService {
     })
   }
 
-  public async generate(images: File[]): Promise<string> {
+  public async generate(images: File[], model: string): Promise<string> {
     if (!this.decryptedApiKey) {
       return Promise.reject(new Error('API Key is missing. Please initialize the service.'))
     }
 
     if (images.length === 0) {
       return Promise.reject(new Error('No image files provided.'))
+    }
+
+    if (!model) {
+      return Promise.reject(new Error('Model is not selected.'))
     }
 
     try {
@@ -75,14 +83,15 @@ class AIService {
       ]
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.5-flash',
+        model,
         contents,
       })
 
-      return response?.text || ''
+      return response?.text ?? ''
     }
-    catch (error: any) {
-      return Promise.reject(new Error(error.message || 'An unknown error occurred during extraction.'))
+    catch (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred during extraction.'
+      return Promise.reject(new Error(message))
     }
   }
 }
