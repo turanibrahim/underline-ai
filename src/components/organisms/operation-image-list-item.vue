@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import DOMPurify from 'dompurify'
-import { AlertCircle, Loader2, RefreshCw } from 'lucide-vue-next'
+import { AlertCircle, Loader2, Minimize2, RefreshCw } from 'lucide-vue-next'
 import { marked } from 'marked'
 import { computed, ref } from 'vue'
+import ImagePreviewModal from '@/components/molecules/operation-image-preview-modal.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import ImagePreviewModal from '@/components/molecules/operation-image-preview-modal.vue'
+import { formatBytes } from '@/lib/image-utils'
 
-type ItemState = 'pending' | 'loading' | 'success' | 'error'
+type ItemState = 'pending' | 'optimizing' | 'loading' | 'success' | 'error'
 
 const props = defineProps<{
   file: File
@@ -15,6 +16,11 @@ const props = defineProps<{
   state: ItemState
   response: string
   error?: string
+  originalSize?: number
+  optimizedSize?: number
+  savedPercent?: number
+  optimizedWidth?: number
+  optimizedHeight?: number
 }>()
 
 const emit = defineEmits<{
@@ -29,6 +35,26 @@ const renderedMarkdown = computed(() => {
 })
 
 const isPreviewOpen = ref(false)
+
+const stateBadgeVariant = computed<'default' | 'destructive' | 'secondary'>(() => {
+  if (props.state === 'error')
+    return 'destructive'
+  if (props.state === 'success')
+    return 'default'
+  return 'secondary'
+})
+
+const optimizationSummary = computed<string | null>(() => {
+  if (props.originalSize == null || props.optimizedSize == null)
+    return null
+  const parts: string[] = []
+  parts.push(`${formatBytes(props.originalSize)} → ${formatBytes(props.optimizedSize)}`)
+  if (props.savedPercent != null && props.savedPercent > 0)
+    parts.push(`-${props.savedPercent}%`)
+  if (props.optimizedWidth != null && props.optimizedHeight != null)
+    parts.push(`${props.optimizedWidth}×${props.optimizedHeight}`)
+  return parts.join(' · ')
+})
 </script>
 
 <template>
@@ -36,7 +62,7 @@ const isPreviewOpen = ref(false)
     <div class="flex flex-col gap-2 min-w-0">
       <div class="flex items-center gap-2 min-w-0">
         <Badge
-          :variant="state === 'error' ? 'destructive' : state === 'success' ? 'default' : 'secondary'"
+          :variant="stateBadgeVariant"
           class="shrink-0"
         >
           {{ state }}
@@ -59,6 +85,13 @@ const isPreviewOpen = ref(false)
           >
         </button>
       </div>
+      <div
+        v-if="optimizationSummary"
+        class="flex items-center gap-1.5 text-[11px] text-emerald-700 dark:text-emerald-400 font-mono"
+      >
+        <Minimize2 class="h-3 w-3 shrink-0" />
+        <span class="truncate" :title="optimizationSummary">{{ optimizationSummary }}</span>
+      </div>
     </div>
 
     <div class="flex flex-col gap-2 min-w-0">
@@ -67,7 +100,7 @@ const isPreviewOpen = ref(false)
           Response
         </span>
         <Button
-          v-if="state !== 'loading'"
+          v-if="state !== 'loading' && state !== 'optimizing'"
           variant="ghost"
           size="sm"
           class="gap-1.5 h-7"
@@ -80,7 +113,14 @@ const isPreviewOpen = ref(false)
 
       <div class="flex-1 min-h-32 max-h-72 overflow-auto rounded-md border bg-background p-3">
         <div
-          v-if="state === 'loading'"
+          v-if="state === 'optimizing'"
+          class="flex items-center gap-2 text-sm text-muted-foreground h-full justify-center"
+        >
+          <Loader2 class="h-4 w-4 animate-spin" />
+          Optimizing for AI…
+        </div>
+        <div
+          v-else-if="state === 'loading'"
           class="flex items-center gap-2 text-sm text-muted-foreground h-full justify-center"
         >
           <Loader2 class="h-4 w-4 animate-spin" />

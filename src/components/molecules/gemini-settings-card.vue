@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Eye, EyeOff, Save } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { Eye, EyeOff } from 'lucide-vue-next'
+import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,36 +12,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { AVAILABLE_MODELS, useGeminiStore } from '@/stores/gemini-store'
 
-const geminiStore = useGeminiStore()
-
-const apiKeyInput = ref(geminiStore.decryptedApiKey)
-const modelInput = ref(geminiStore.selectedModel)
-const promptInput = ref(geminiStore.systemPrompt)
-const showKey = ref(false)
-const saved = ref(false)
-
-watch(apiKeyInput, () => {
-  saved.value = false
-})
-watch(modelInput, () => {
-  saved.value = false
-})
-watch(promptInput, () => {
-  saved.value = false
-})
-
-function handleSave() {
-  if (apiKeyInput.value.trim()) {
-    geminiStore.setApiKey(apiKeyInput.value.trim())
-  }
-  if (modelInput.value) {
-    geminiStore.setModel(modelInput.value)
-  }
-  geminiStore.setSystemPrompt(promptInput.value)
-  saved.value = true
+export interface GeminiModelOption {
+  value: string
+  label: string
 }
+
+defineProps<{
+  models: readonly GeminiModelOption[]
+}>()
+const apiKey = defineModel<string>('apiKey', { required: true })
+const model = defineModel<string>('model', { required: true })
+const prompt = defineModel<string>('prompt', { required: true })
+
+const showKey = ref(false)
 </script>
 
 <template>
@@ -62,7 +46,7 @@ function handleSave() {
         </label>
         <div class="relative">
           <Input
-            v-model="apiKeyInput"
+            v-model="apiKey"
             :type="showKey ? 'text' : 'password'"
             placeholder="AIzaSy..."
             class="font-mono pr-10"
@@ -90,13 +74,13 @@ function handleSave() {
         >
           Model
         </label>
-        <Select v-model="modelInput">
+        <Select v-model="model">
           <SelectTrigger class="w-full">
             <SelectValue placeholder="Select a model" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem
-              v-for="m in AVAILABLE_MODELS"
+              v-for="m in models"
               :key="m.value"
               :value="m.value"
             >
@@ -113,24 +97,11 @@ function handleSave() {
           System Prompt
         </label>
         <Textarea
-          v-model="promptInput"
+          v-model="prompt"
           :rows="10"
           class="font-mono text-sm"
           placeholder="Describe how the model should process the images…"
         />
-      </div>
-
-      <div class="flex items-center gap-3">
-        <Button
-          :disabled="!apiKeyInput.trim()"
-          @click="handleSave"
-        >
-          <Save class="h-4 w-4 mr-2" />
-          Save Settings
-        </Button>
-        <span v-if="saved" class="text-sm text-emerald-600 dark:text-emerald-400">
-          Saved.
-        </span>
       </div>
     </CardContent>
   </Card>

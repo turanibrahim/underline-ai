@@ -2,8 +2,8 @@
 import { Image as ImageIcon, Settings as SettingsIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
 import OperationFileUpload from '@/components/molecules/operation-file-upload.vue'
-import OperationSettingsForm from '@/components/molecules/operation-settings-form.vue'
 import OperationImageListItem from '@/components/organisms/operation-image-list-item.vue'
+import OperationSettingsForm from '@/components/organisms/operation-settings-form.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -13,9 +13,11 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs'
 import { aiService } from '@/services/gemini-service'
+import { imageOptimizerService } from '@/services/image-optimizer-service'
 import { useGeminiStore } from '@/stores/gemini-store'
+import { useOptimizerStore } from '@/stores/optimizer-store'
 
-type ItemState = 'pending' | 'loading' | 'success' | 'error'
+type ItemState = 'pending' | 'optimizing' | 'loading' | 'success' | 'error'
 type PageState = 'idle' | 'running'
 
 interface ImageItem {
@@ -25,9 +27,16 @@ interface ImageItem {
   state: ItemState
   response: string
   error?: string
+  optimizedFile?: File
+  originalSize?: number
+  optimizedSize?: number
+  savedPercent?: number
+  optimizedWidth?: number
+  optimizedHeight?: number
 }
 
 const geminiStore = useGeminiStore()
+const optimizerStore = useOptimizerStore()
 
 const pageState = ref<PageState>('idle')
 const files = ref<File[]>([])
@@ -43,12 +52,27 @@ function handleRemoveFile(index: number) {
   previewUrls.value.splice(index, 1)
 }
 
+async function ensureOptimized(item: ImageItem): Promise<File> {
+  if (item.optimizedFile)
+    return item.optimizedFile
+  const result = await imageOptimizerService.optimize(item.file, optimizerStore.asOptions())
+  item.optimizedFile = result.file
+  item.originalSize = result.originalSize
+  item.optimizedSize = result.optimizedSize
+  item.savedPercent = result.savedPercent
+  item.optimizedWidth = result.width
+  item.optimizedHeight = result.height
+  return result.file
+}
+
 async function runForItem(item: ImageItem) {
-  item.state = 'loading'
-  item.response = ''
   item.error = undefined
   try {
-    const text = await aiService.generate([item.file], geminiStore.selectedModel)
+    item.state = 'optimizing'
+    const optimized = await ensureOptimized(item)
+    item.state = 'loading'
+    item.response = ''
+    const text = await aiService.generate([optimized], geminiStore.selectedModel)
     item.response = text
     item.state = 'success'
   }
@@ -67,7 +91,7 @@ async function startExtraction() {
     id: nextId++,
     file,
     previewUrl: previewUrls.value[index],
-    state: 'loading' as ItemState,
+    state: 'optimizing' as ItemState,
     response: '',
   }))
 
@@ -152,6 +176,11 @@ function resetAll() {
                     :state="item.state"
                     :response="item.response"
                     :error="item.error"
+                    :original-size="item.originalSize"
+                    :optimized-size="item.optimizedSize"
+                    :saved-percent="item.savedPercent"
+                    :optimized-width="item.optimizedWidth"
+                    :optimized-height="item.optimizedHeight"
                     @click:retry="retryItem(item.id)"
                   />
                 </div>
