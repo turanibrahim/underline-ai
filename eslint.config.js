@@ -17,6 +17,7 @@ export default antfu(
     rules: {
       'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
       'ts/no-explicit-any': 'error',
+      'vue/component-name-in-template-casing': ['error', 'KebabCase'],
     },
   },
 )
