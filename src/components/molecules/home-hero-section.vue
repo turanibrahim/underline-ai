@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  ArrowRight,
-  Terminal,
-} from 'lucide-vue-next'
+import { ArrowRight, Terminal } from 'lucide-vue-next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 </script>
@@ -30,10 +27,17 @@ import { Button } from '@/components/ui/button'
     </p>
 
     <div class="pt-4">
-      <Button size="lg" class="gap-2 text-base font-semibold px-8">
-        Lets Get Started
-        <ArrowRight class="h-4 w-4" />
-      </Button>
+      <router-link :to="{ name: 'operation-page' }">
+        <Button
+          as="a"
+          class="gap-2 text-base font-semibold px-8"
+          :to="{ name: 'operation-page' }"
+          size="lg"
+        >
+          Lets Get Started
+          <ArrowRight class="h-4 w-4" />
+        </Button>
+      </router-link>
     </div>
   </section>
 </template>
