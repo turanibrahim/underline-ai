@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import type { HistoryEntry } from '@/services/history-service'
-import { Check, Copy, Eye, Image as ImageIcon, Trash2 } from 'lucide-vue-next'
+import { Check, Copy, Eye, Image as ImageIcon, MoreHorizontal, Trash2 } from 'lucide-vue-next'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useCopyActions } from '@/composables/use-copy-actions'
 import { formatDuration, formatSize, formatTimestamp } from '@/lib/format'
 
 const props = defineProps<{
@@ -15,7 +23,6 @@ const emit = defineEmits<{
 }>()
 
 const thumbnailUrl = ref<string>('')
-const justCopied = ref(false)
 
 onMounted(() => {
   if (props.entry.originalBlob)
@@ -27,18 +34,7 @@ onBeforeUnmount(() => {
     URL.revokeObjectURL(thumbnailUrl.value)
 })
 
-const copyResponse = async () => {
-  try {
-    await navigator.clipboard.writeText(props.entry.response)
-    justCopied.value = true
-    setTimeout(() => {
-      justCopied.value = false
-    }, 1500)
-  }
-  catch (error) {
-    console.error('Failed to copy response.', error)
-  }
-}
+const { copyAsText, copyAsMarkdown, justCopiedText, justCopiedMarkdown } = useCopyActions(() => props.entry.response)
 </script>
 
 <template>
@@ -81,41 +77,55 @@ const copyResponse = async () => {
       </div>
     </td>
     <td class="p-3">
-      <div class="flex items-center justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          class="gap-1.5 h-8 opacity-70 group-hover:opacity-100 transition-opacity"
-          @click="emit('view', entry)"
-        >
-          <Eye class="h-3.5 w-3.5" />
-          View
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          class="gap-1.5 h-8 opacity-70 group-hover:opacity-100 transition-opacity"
-          @click="copyResponse"
-        >
-          <Check
-            v-if="justCopied"
-            class="h-3.5 w-3.5 text-emerald-500"
-          />
-          <Copy
-            v-else
-            class="h-3.5 w-3.5"
-          />
-          {{ justCopied ? 'Copied' : 'Copy' }}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="h-8 w-8 text-muted-foreground hover:text-destructive opacity-70 group-hover:opacity-100 transition-opacity"
-          :aria-label="`Delete history entry for ${entry.fileName}`"
-          @click="emit('delete', entry)"
-        >
-          <Trash2 class="h-3.5 w-3.5" />
-        </Button>
+      <div class="flex items-center justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8 text-muted-foreground opacity-70 group-hover:opacity-100 transition-opacity"
+              :aria-label="`Actions for ${entry.fileName}`"
+            >
+              <MoreHorizontal class="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="min-w-44">
+            <DropdownMenuItem @select="emit('view', entry)">
+              <Eye class="h-3.5 w-3.5" />
+              View
+            </DropdownMenuItem>
+            <DropdownMenuItem @select="copyAsText">
+              <Check
+                v-if="justCopiedText"
+                class="h-3.5 w-3.5 text-emerald-500"
+              />
+              <Copy
+                v-else
+                class="h-3.5 w-3.5"
+              />
+              {{ justCopiedText ? 'Copied as text' : 'Copy as text' }}
+            </DropdownMenuItem>
+            <DropdownMenuItem @select="copyAsMarkdown">
+              <Check
+                v-if="justCopiedMarkdown"
+                class="h-3.5 w-3.5 text-emerald-500"
+              />
+              <Copy
+                v-else
+                class="h-3.5 w-3.5"
+              />
+              {{ justCopiedMarkdown ? 'Copied as markdown' : 'Copy as markdown' }}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              @select="emit('delete', entry)"
+            >
+              <Trash2 class="h-3.5 w-3.5" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </td>
   </tr>

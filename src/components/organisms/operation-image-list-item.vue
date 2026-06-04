@@ -2,6 +2,7 @@
 import type { BadgeVariants } from '@/components/ui/badge'
 import { AlertCircle, CheckCircle2, Loader2, Minimize2, RefreshCw, XCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
+import CopyButtons from '@/components/molecules/copy-buttons.vue'
 import MarkdownView from '@/components/molecules/markdown-view.vue'
 import ImagePreviewModal from '@/components/molecules/operation-image-preview-modal.vue'
 import { Badge } from '@/components/ui/badge'
@@ -124,7 +125,7 @@ const optimizationSummary = computed<string | null>(() => {
     </div>
 
     <div class="flex flex-col gap-2 min-w-0">
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between gap-2">
         <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Response
         </span>
@@ -172,6 +173,13 @@ const optimizationSummary = computed<string | null>(() => {
         >
           Waiting…
         </div>
+      </div>
+
+      <div
+        v-if="state === 'success' && response"
+        class="flex items-center justify-end pt-1"
+      >
+        <CopyButtons :value="response" />
       </div>
     </div>
   </div>
