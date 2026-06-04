@@ -14,42 +14,47 @@ import {
   MAX_DIMENSION_CHOICES,
   QUALITY_PERCENT_CHOICES,
 } from '@/lib/image-utils'
+import { configService } from '@/services/config-service'
 
-const STORAGE_KEY_MAX_DIM = 'optimizer.maxDimension'
-const STORAGE_KEY_QUALITY = 'optimizer.quality'
-const STORAGE_KEY_GRAYSCALE = 'optimizer.grayscale'
-const STORAGE_KEY_FORMAT = 'optimizer.format'
-
-const readNumber = <T extends number>(key: string, fallback: T, allowed: readonly T[]): T => {
-  const raw = localStorage.getItem(key)
-  if (raw === null || raw === '')
+const readNumber = <T extends number>(value: unknown, fallback: T, allowed: readonly T[]): T => {
+  if (typeof value !== 'number' || !Number.isFinite(value))
     return fallback
-  const n = Number(raw)
-  return allowed.includes(n as T) ? (n as T) : fallback
+  return allowed.includes(value as T) ? (value as T) : fallback
 }
 
-const readBoolean = (key: string, fallback: boolean): boolean => {
-  const raw = localStorage.getItem(key)
-  if (raw === null)
+const readBoolean = (value: unknown, fallback: boolean): boolean => {
+  if (typeof value !== 'boolean')
     return fallback
-  return raw === 'true'
+  return value
 }
 
-const readFormat = (): FormatChoice => {
-  const raw = localStorage.getItem(STORAGE_KEY_FORMAT)
-  return raw === 'webp' ? 'webp' : 'jpeg'
+const readFormat = (value: unknown): FormatChoice => {
+  return value === 'webp' ? 'webp' : 'jpeg'
 }
 
 export const useOptimizerStore = defineStore('optimizer', () => {
-  const maxDimension = ref<MaxDimensionChoice>(
-    readNumber(STORAGE_KEY_MAX_DIM, DEFAULT_MAX_DIMENSION, MAX_DIMENSION_CHOICES),
-  )
-  const qualityPercent = ref<QualityPercentChoice>(
-    readNumber(STORAGE_KEY_QUALITY, DEFAULT_QUALITY_PERCENT, QUALITY_PERCENT_CHOICES),
-  )
+  const maxDimension = ref<MaxDimensionChoice>(DEFAULT_MAX_DIMENSION)
+  const qualityPercent = ref<QualityPercentChoice>(DEFAULT_QUALITY_PERCENT)
   const quality = ref<number>(qualityPercent.value / 100)
-  const grayscale = ref<boolean>(readBoolean(STORAGE_KEY_GRAYSCALE, DEFAULT_GRAYSCALE))
-  const format = ref<FormatChoice>(readFormat())
+  const grayscale = ref<boolean>(DEFAULT_GRAYSCALE)
+  const format = ref<FormatChoice>(readFormat(undefined))
+  const isReady = ref<boolean>(false)
+
+  const hydrate = async (): Promise<void> => {
+    const [storedMaxDim, storedQuality, storedGrayscale, storedFormat] = await Promise.all([
+      configService.getMaxDimension(),
+      configService.getQuality(),
+      configService.getGrayscale(),
+      configService.getFormat(),
+    ])
+
+    maxDimension.value = readNumber(storedMaxDim, DEFAULT_MAX_DIMENSION, MAX_DIMENSION_CHOICES)
+    qualityPercent.value = readNumber(storedQuality, DEFAULT_QUALITY_PERCENT, QUALITY_PERCENT_CHOICES)
+    quality.value = qualityPercent.value / 100
+    grayscale.value = readBoolean(storedGrayscale, DEFAULT_GRAYSCALE)
+    format.value = readFormat(storedFormat)
+    isReady.value = true
+  }
 
   const asOptions = (): ResolvedOptions => {
     return {
@@ -60,33 +65,33 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     }
   }
 
-  const setMaxDimension = (v: MaxDimensionChoice): void => {
-    if (MAX_DIMENSION_CHOICES.includes(v)) {
-      maxDimension.value = v
-      localStorage.setItem(STORAGE_KEY_MAX_DIM, String(v))
-    }
+  const setMaxDimension = async (v: MaxDimensionChoice): Promise<void> => {
+    if (!MAX_DIMENSION_CHOICES.includes(v))
+      return
+    maxDimension.value = v
+    await configService.setMaxDimension(v)
   }
 
-  const setQuality = (percent: number): void => {
+  const setQuality = async (percent: number): Promise<void> => {
     const rounded = Math.round(percent)
     const snapped: QualityPercentChoice = QUALITY_PERCENT_CHOICES.reduce((prev, curr) =>
       Math.abs(curr - rounded) < Math.abs(prev - rounded) ? curr : prev,
     )
     qualityPercent.value = snapped
     quality.value = snapped / 100
-    localStorage.setItem(STORAGE_KEY_QUALITY, String(snapped))
+    await configService.setQuality(snapped)
   }
 
-  const setGrayscale = (v: boolean): void => {
+  const setGrayscale = async (v: boolean): Promise<void> => {
     grayscale.value = v
-    localStorage.setItem(STORAGE_KEY_GRAYSCALE, String(v))
+    await configService.setGrayscale(v)
   }
 
-  const setFormat = (v: FormatChoice): void => {
-    if (FORMAT_CHOICES.includes(v)) {
-      format.value = v
-      localStorage.setItem(STORAGE_KEY_FORMAT, v)
-    }
+  const setFormat = async (v: FormatChoice): Promise<void> => {
+    if (!FORMAT_CHOICES.includes(v))
+      return
+    format.value = v
+    await configService.setFormat(v)
   }
 
   return {
@@ -95,6 +100,8 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     quality,
     grayscale,
     format,
+    isReady,
+    hydrate,
     asOptions,
     setMaxDimension,
     setQuality,
