@@ -1,5 +1,6 @@
 import type { Component } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
+import { requireApiKey } from './guards/api-missing-guard'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -41,6 +42,7 @@ export const routes: RouteRecordRaw[] = [
     path: '/operation',
     name: 'operation-page',
     component: lazyView(operationLoader),
+    beforeEnter: requireApiKey,
     meta: { layout: 'app' },
   },
   {

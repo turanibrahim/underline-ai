@@ -134,19 +134,5 @@ const onDrop = (event: DragEvent) => {
       <Play class="h-4 w-4" />
       Start Extraction ({{ files.length }})
     </Button>
-
-    <p
-      v-if="!apiKey"
-      class="text-xs text-center text-muted-foreground"
-    >
-      Add your Gemini API key in
-      <router-link
-        to="/settings"
-        class="font-medium text-foreground underline-offset-4 hover:underline"
-      >
-        Settings
-      </router-link>
-      to start extracting.
-    </p>
   </div>
 </template>
