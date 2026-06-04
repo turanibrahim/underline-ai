@@ -11,4 +11,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // @ts-expect-error vitest augments the config type at runtime
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.ts'],
+    exclude: [
+      'node_modules',
+      'dist',
+      'src/components/**',
+      'src/pages/**',
+      'src/layouts/**',
+    ],
+  },
 })
