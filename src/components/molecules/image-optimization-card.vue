@@ -49,7 +49,7 @@ const format = defineModel<FormatChoice>('format', { required: true })
           :model-value="String(maxDimension)"
           @update:model-value="(v) => maxDimension = Number(v) as MaxDimensionChoice"
         >
-          <SelectTrigger class="w-full">
+          <SelectTrigger class="w-full sm:w-auto">
             <SelectValue placeholder="Select max dimension" />
           </SelectTrigger>
           <SelectContent>
@@ -142,7 +142,7 @@ const format = defineModel<FormatChoice>('format', { required: true })
           Output Format
         </label>
         <Select v-model="format">
-          <SelectTrigger class="w-full">
+          <SelectTrigger class="w-full sm:w-auto">
             <SelectValue placeholder="Select format" />
           </SelectTrigger>
           <SelectContent>

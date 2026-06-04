@@ -98,7 +98,7 @@ const showKey = ref(false)
           id="gemini-model"
           v-model="model"
         >
-          <SelectTrigger class="w-full">
+          <SelectTrigger class="w-full sm:w-auto">
             <SelectValue placeholder="Select a model" />
           </SelectTrigger>
           <SelectContent>
