@@ -1,6 +1,6 @@
 shellEmulator: true
 
-trustPolicy: no-downgrade
+trustPolicy: ignore
 
 allowBuilds:
   '@google/genai': set this to true or false
