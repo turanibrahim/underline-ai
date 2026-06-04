@@ -8,7 +8,7 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "vue-tsc -b",
-    "lint": "eslint .",
+    "lint": "eslint \"**/*.{ts,js,vue}\"",
     "lint:layers": "eslint . --rule 'no-restricted-imports: error'",
     "test": "vitest run",
     "test:watch": "vitest",
