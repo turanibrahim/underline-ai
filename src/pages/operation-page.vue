@@ -1,17 +1,10 @@
 <script setup lang="ts">
-import { Image as ImageIcon, Settings as SettingsIcon } from 'lucide-vue-next'
+import { Image as ImageIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
 import OperationFileUpload from '@/components/molecules/operation-file-upload.vue'
 import OperationImageListItem from '@/components/organisms/operation-image-list-item.vue'
-import OperationSettingsForm from '@/components/organisms/operation-settings-form.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
 import { aiService } from '@/services/gemini-service'
 import { imageOptimizerService } from '@/services/image-optimizer-service'
 import { useGeminiStore } from '@/stores/gemini-store'
@@ -138,79 +131,67 @@ const resetAll = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background p-6">
+  <div class="min-h-full bg-background p-6">
     <div class="max-w-5xl mx-auto space-y-6">
-      <Tabs default-value="operation" class="w-full">
-        <TabsList class="grid w-full grid-cols-2">
-          <TabsTrigger value="operation" class="gap-2">
-            <ImageIcon class="h-4 w-4" />
-            Operation
-          </TabsTrigger>
-          <TabsTrigger value="settings" class="gap-2">
-            <SettingsIcon class="h-4 w-4" />
-            Settings
-          </TabsTrigger>
-        </TabsList>
+      <Card>
+        <CardContent class="pt-6">
+          <div class="flex items-center gap-2 mb-6">
+            <ImageIcon class="h-5 w-5 text-emerald-500" />
+            <h1 class="text-2xl font-bold tracking-tight">
+              Operation
+            </h1>
+          </div>
 
-        <TabsContent value="operation" class="mt-6">
-          <Card>
-            <CardContent class="pt-6">
-              <div
-                v-if="pageState === 'idle'"
-                class="transition-all duration-300 ease-in-out"
+          <div
+            v-if="pageState === 'idle'"
+            class="transition-all duration-300 ease-in-out"
+          >
+            <OperationFileUpload
+              v-model:files="files"
+              v-model:preview-urls="previewUrls"
+              :api-key="geminiStore.apiKey"
+              @click:extract="startExtraction"
+              @click:remove-file="handleRemoveFile"
+            />
+          </div>
+
+          <div
+            v-else
+            class="space-y-4 animate-in fade-in slide-in-from-bottom-4"
+          >
+            <div class="flex items-center justify-between border-b pb-4">
+              <h2 class="text-2xl font-bold tracking-tight">
+                Extraction Results ({{ items.length }})
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                @click="resetAll"
               >
-                <OperationFileUpload
-                  v-model:files="files"
-                  v-model:preview-urls="previewUrls"
-                  :api-key="geminiStore.apiKey"
-                  @click:extract="startExtraction"
-                  @click:remove-file="handleRemoveFile"
-                />
-              </div>
+                Start Over
+              </Button>
+            </div>
 
-              <div
-                v-else
-                class="space-y-4 animate-in fade-in slide-in-from-bottom-4"
-              >
-                <div class="flex items-center justify-between border-b pb-4">
-                  <h2 class="text-2xl font-bold tracking-tight">
-                    Extraction Results ({{ items.length }})
-                  </h2>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    @click="resetAll"
-                  >
-                    Start Over
-                  </Button>
-                </div>
-
-                <div class="space-y-3">
-                  <OperationImageListItem
-                    v-for="item in items"
-                    :key="item.id"
-                    :file="item.file"
-                    :preview-url="item.previewUrl"
-                    :state="item.state"
-                    :response="item.response"
-                    :error="item.error"
-                    :original-size="item.originalSize"
-                    :optimized-size="item.optimizedSize"
-                    :saved-percent="item.savedPercent"
-                    :optimized-width="item.optimizedWidth"
-                    :optimized-height="item.optimizedHeight"
-                    @click:retry="retryItem(item.id)"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" class="mt-6">
-          <OperationSettingsForm />
-        </TabsContent>
-      </Tabs>
+            <div class="space-y-3">
+              <OperationImageListItem
+                v-for="item in items"
+                :key="item.id"
+                :file="item.file"
+                :preview-url="item.previewUrl"
+                :state="item.state"
+                :response="item.response"
+                :error="item.error"
+                :original-size="item.originalSize"
+                :optimized-size="item.optimizedSize"
+                :saved-percent="item.savedPercent"
+                :optimized-width="item.optimizedWidth"
+                :optimized-height="item.optimizedHeight"
+                @click:retry="retryItem(item.id)"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   </div>
 </template>
