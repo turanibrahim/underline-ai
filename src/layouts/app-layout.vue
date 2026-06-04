@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { History, Image as ImageIcon, Loader2, Settings as SettingsIcon, Terminal } from 'lucide-vue-next'
+import { History, Image as ImageIcon, Loader2, Settings as SettingsIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { Logo } from '@/components/ui/logo'
 import { useGeminiStore } from '@/stores/gemini-store'
 import { useOptimizerStore } from '@/stores/optimizer-store'
 
@@ -75,14 +76,9 @@ init()
       <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <RouterLink
           to="/"
-          class="group flex items-center gap-2 text-sm font-semibold tracking-tight rounded-md focus-visible:outline-none"
+          class="inline-flex text-sm rounded-md focus-visible:outline-none"
         >
-          <span
-            class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 transition-colors group-hover:bg-emerald-500/15 dark:text-emerald-400"
-          >
-            <Terminal class="h-3.5 w-3.5" />
-          </span>
-          <span>Underline AI</span>
+          <Logo />
         </RouterLink>
 
         <nav class="flex items-center gap-1">
