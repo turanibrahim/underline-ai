@@ -3,7 +3,7 @@ import { aiService } from './gemini-service'
 
 const { generateContent, GoogleGenAIMock } = vi.hoisted(() => {
   const generateContent = vi.fn()
-  const GoogleGenAIMock = vi.fn().mockImplementation(class { models = { generateContent } })
+  const GoogleGenAIMock = vi.fn(class { models = { generateContent } })
   return { generateContent, GoogleGenAIMock }
 })
 
