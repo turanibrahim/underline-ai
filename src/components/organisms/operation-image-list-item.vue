@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import DOMPurify from 'dompurify'
 import { AlertCircle, Loader2, Minimize2, RefreshCw } from 'lucide-vue-next'
-import { marked } from 'marked'
 import { computed, ref } from 'vue'
+import MarkdownView from '@/components/molecules/markdown-view.vue'
 import ImagePreviewModal from '@/components/molecules/operation-image-preview-modal.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -26,13 +25,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   'click:retry': []
 }>()
-
-const renderedMarkdown = computed(() => {
-  if (!props.response)
-    return ''
-  const rawHtml = marked.parse(props.response) as string
-  return DOMPurify.sanitize(rawHtml)
-})
 
 const isPreviewOpen = ref(false)
 
@@ -133,10 +125,9 @@ const optimizationSummary = computed<string | null>(() => {
           <AlertCircle class="h-4 w-4 mt-0.5 shrink-0" />
           <span class="wrap-break-word">{{ error || 'Request failed.' }}</span>
         </div>
-        <div
+        <MarkdownView
           v-else-if="state === 'success' && response"
-          class="prose prose-sm dark:prose-invert max-w-none prose-emerald"
-          v-html="renderedMarkdown"
+          :source="response"
         />
         <div
           v-else

@@ -63,8 +63,8 @@ const showKey = ref(false)
           </Button>
         </div>
         <p class="text-xs text-muted-foreground">
-          Your key is stored securely in your browser's local storage and never
-          sent to our servers.
+          Your key is stored securely in your browser and never sent to our
+          servers.
         </p>
       </div>
 

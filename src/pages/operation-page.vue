@@ -15,6 +15,7 @@ import {
 import { aiService } from '@/services/gemini-service'
 import { imageOptimizerService } from '@/services/image-optimizer-service'
 import { useGeminiStore } from '@/stores/gemini-store'
+import { useHistoryStore } from '@/stores/history-store'
 import { useOptimizerStore } from '@/stores/optimizer-store'
 
 type ItemState = 'pending' | 'optimizing' | 'loading' | 'success' | 'error'
@@ -37,6 +38,7 @@ interface ImageItem {
 
 const geminiStore = useGeminiStore()
 const optimizerStore = useOptimizerStore()
+const historyStore = useHistoryStore()
 
 const pageState = ref<PageState>('idle')
 const files = ref<File[]>([])
@@ -67,6 +69,7 @@ const ensureOptimized = async (item: ImageItem): Promise<File> => {
 
 const runForItem = async (item: ImageItem) => {
   item.error = undefined
+  const start = performance.now()
   try {
     item.state = 'optimizing'
     const optimized = await ensureOptimized(item)
@@ -75,6 +78,21 @@ const runForItem = async (item: ImageItem) => {
     const text = await aiService.generate([optimized], geminiStore.selectedModel)
     item.response = text
     item.state = 'success'
+
+    void historyStore.record({
+      timestamp: Date.now(),
+      fileName: item.file.name,
+      mimeType: item.file.type || 'application/octet-stream',
+      originalSize: item.originalSize ?? item.file.size,
+      optimizedSize: item.optimizedSize ?? optimized.size,
+      originalBlob: item.file,
+      optimizedBlob: optimized,
+      model: geminiStore.selectedModel,
+      systemPrompt: geminiStore.systemPrompt,
+      response: text,
+      status: 'success',
+      durationMs: Math.max(0, Math.round(performance.now() - start)),
+    })
   }
   catch (err) {
     const message = err instanceof Error ? err.message : 'Request failed.'

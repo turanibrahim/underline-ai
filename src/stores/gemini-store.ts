@@ -1,10 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { configService } from '@/services/config-service'
 import { aiService } from '@/services/gemini-service'
-
-const STORAGE_KEY = 'gemini.encryptedKey'
-const STORAGE_KEY_MODEL = 'gemini.model'
-const STORAGE_KEY_PROMPT = 'gemini.systemPrompt'
 
 export const DEFAULT_MODEL = 'gemini-3.5-flash'
 
@@ -27,39 +24,59 @@ Rules:
 - Do not add any commentary, preamble, or explanation.`
 
 export const useGeminiStore = defineStore('gemini', () => {
-  const encryptedKey = ref<string>(localStorage.getItem(STORAGE_KEY) ?? '')
-  const selectedModel = ref<string>(localStorage.getItem(STORAGE_KEY_MODEL) ?? DEFAULT_MODEL)
-  const systemPrompt = ref<string>(localStorage.getItem(STORAGE_KEY_PROMPT) ?? DEFAULT_SYSTEM_PROMPT)
+  const encryptedKey = ref<string>('')
+  const selectedModel = ref<string>(DEFAULT_MODEL)
+  const systemPrompt = ref<string>(DEFAULT_SYSTEM_PROMPT)
+  const isReady = ref<boolean>(false)
 
   const apiKey = computed<string>(() => encryptedKey.value)
   const decryptedApiKey = computed<string>(() => aiService.getDecryptedKey())
 
-  if (encryptedKey.value) {
-    aiService.initializeKey(encryptedKey.value)
-  }
-  aiService.setSystemPrompt(systemPrompt.value)
+  const hydrate = async (): Promise<void> => {
+    const [storedKey, storedModel, storedPrompt] = await Promise.all([
+      configService.getEncryptedKey(),
+      configService.getModel(),
+      configService.getSystemPrompt(),
+    ])
 
-  const setApiKey = (rawKey: string): void => {
+    if (typeof storedKey === 'string' && storedKey.length > 0) {
+      encryptedKey.value = storedKey
+      aiService.initializeKey(storedKey)
+    }
+    if (typeof storedModel === 'string' && storedModel.length > 0)
+      selectedModel.value = storedModel
+    if (typeof storedPrompt === 'string' && storedPrompt.length > 0) {
+      systemPrompt.value = storedPrompt
+      aiService.setSystemPrompt(storedPrompt)
+    }
+    else {
+      aiService.setSystemPrompt(systemPrompt.value)
+    }
+    isReady.value = true
+  }
+
+  const setApiKey = async (rawKey: string): Promise<void> => {
     const encrypted = aiService.encryptKey(rawKey)
     encryptedKey.value = encrypted
     aiService.initializeKey(encrypted)
-    localStorage.setItem(STORAGE_KEY, encrypted)
+    await configService.setEncryptedKey(encrypted)
   }
 
-  const setModel = (model: string): void => {
+  const setModel = async (model: string): Promise<void> => {
     selectedModel.value = model
-    localStorage.setItem(STORAGE_KEY_MODEL, model)
+    await configService.setModel(model)
   }
 
-  const setSystemPrompt = (prompt: string): void => {
+  const setSystemPrompt = async (prompt: string): Promise<void> => {
     systemPrompt.value = prompt
     aiService.setSystemPrompt(prompt)
-    localStorage.setItem(STORAGE_KEY_PROMPT, prompt)
+    await configService.setSystemPrompt(prompt)
   }
 
-  const clearApiKey = (): void => {
+  const clearApiKey = async (): Promise<void> => {
     encryptedKey.value = ''
-    localStorage.removeItem(STORAGE_KEY)
+    aiService.initializeKey('')
+    await configService.setEncryptedKey('')
   }
 
   return {
@@ -67,6 +84,8 @@ export const useGeminiStore = defineStore('gemini', () => {
     decryptedApiKey,
     selectedModel,
     systemPrompt,
+    isReady,
+    hydrate,
     setApiKey,
     setModel,
     setSystemPrompt,

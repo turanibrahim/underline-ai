@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { onBeforeUnmount, watch } from 'vue'
 import { X } from 'lucide-vue-next'
+import { onBeforeUnmount, watch } from 'vue'
 import { Button } from '@/components/ui/button'
-
-const open = defineModel<boolean>('open', { required: true })
 
 defineProps<{
   src: string
   alt: string
   title: string
 }>()
+
+const open = defineModel<boolean>('open', { required: true })
 
 const close = () => {
   open.value = false
