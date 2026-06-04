@@ -42,23 +42,29 @@ const copyResponse = async () => {
 </script>
 
 <template>
-  <tr class="border-b align-top hover:bg-muted/30 transition-colors">
+  <tr class="group border-b align-top transition-colors duration-200 hover:bg-muted/40">
     <td class="p-3 w-20">
-      <div class="h-12 w-12 rounded-md overflow-hidden bg-muted flex items-center justify-center">
+      <div class="h-12 w-12 rounded-md overflow-hidden bg-muted ring-1 ring-border/60 flex items-center justify-center transition-shadow duration-200 group-hover:shadow-sm">
         <img
           v-if="thumbnailUrl"
           :src="thumbnailUrl"
           :alt="entry.fileName"
           class="h-full w-full object-cover"
         >
-        <ImageIcon v-else class="h-5 w-5 text-muted-foreground" />
+        <ImageIcon
+          v-else
+          class="h-5 w-5 text-muted-foreground"
+        />
       </div>
     </td>
     <td class="p-3">
-      <div class="font-medium truncate max-w-xs" :title="entry.fileName">
+      <div
+        class="font-medium truncate max-w-xs"
+        :title="entry.fileName"
+      >
         {{ entry.fileName }}
       </div>
-      <div class="text-xs text-muted-foreground">
+      <div class="text-xs text-muted-foreground font-mono">
         {{ entry.mimeType || 'unknown' }}
       </div>
     </td>
@@ -70,16 +76,16 @@ const copyResponse = async () => {
     </td>
     <td class="p-3 text-sm text-muted-foreground whitespace-nowrap">
       <div>{{ formatSize(entry.originalSize) }} → {{ formatSize(entry.optimizedSize) }}</div>
-      <div class="text-xs">
+      <div class="text-xs font-mono">
         {{ formatDuration(entry.durationMs) }}
       </div>
     </td>
     <td class="p-3">
-      <div class="flex items-center justify-end gap-1.5">
+      <div class="flex items-center justify-end gap-1">
         <Button
           variant="ghost"
           size="sm"
-          class="gap-1.5 h-8"
+          class="gap-1.5 h-8 opacity-70 group-hover:opacity-100 transition-opacity"
           @click="emit('view', entry)"
         >
           <Eye class="h-3.5 w-3.5" />
@@ -88,17 +94,23 @@ const copyResponse = async () => {
         <Button
           variant="ghost"
           size="sm"
-          class="gap-1.5 h-8"
+          class="gap-1.5 h-8 opacity-70 group-hover:opacity-100 transition-opacity"
           @click="copyResponse"
         >
-          <Check v-if="justCopied" class="h-3.5 w-3.5 text-emerald-500" />
-          <Copy v-else class="h-3.5 w-3.5" />
+          <Check
+            v-if="justCopied"
+            class="h-3.5 w-3.5 text-emerald-500"
+          />
+          <Copy
+            v-else
+            class="h-3.5 w-3.5"
+          />
           {{ justCopied ? 'Copied' : 'Copy' }}
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          class="h-8 w-8 text-destructive hover:text-destructive"
+          class="h-8 w-8 text-muted-foreground hover:text-destructive opacity-70 group-hover:opacity-100 transition-opacity"
           :aria-label="`Delete history entry for ${entry.fileName}`"
           @click="emit('delete', entry)"
         >

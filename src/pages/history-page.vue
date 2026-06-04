@@ -1,11 +1,21 @@
 <script setup lang="ts">
 import type { HistoryEntry } from '@/services/history-service'
-import { Trash2 } from 'lucide-vue-next'
+import { History, Trash2 } from 'lucide-vue-next'
 import { onMounted, ref } from 'vue'
 import HistoryRow from '@/components/molecules/history-row.vue'
 import HistoryViewDialog from '@/components/molecules/history-view-dialog.vue'
+import PageContainer from '@/components/molecules/page-container.vue'
+import PageHeader from '@/components/molecules/page-header.vue'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -57,85 +67,93 @@ const handleClearAll = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background p-6">
-    <div class="max-w-6xl mx-auto space-y-6">
-      <Card>
-        <CardHeader class="flex-row items-center justify-between space-y-0">
-          <div class="space-y-1">
-            <CardTitle>Extraction History</CardTitle>
-            <CardDescription>
-              {{ historyStore.entries.length }} {{ historyStore.entries.length === 1 ? 'entry' : 'entries' }}
-              stored locally in your browser.
-            </CardDescription>
+  <PageContainer>
+    <PageHeader>
+      <template #icon>
+        <History class="h-4 w-4" />
+      </template>
+      Extraction History
+      <template #description>
+        {{ historyStore.entries.length }}
+        {{ historyStore.entries.length === 1 ? 'entry' : 'entries' }}
+        stored locally in your browser. Each row keeps the source image, optimized
+        version, and the model's response.
+      </template>
+      <template #actions>
+        <Button
+          variant="outline"
+          size="sm"
+          :disabled="historyStore.entries.length === 0"
+          class="gap-1.5 text-destructive hover:text-destructive"
+          @click="isClearAllOpen = true"
+        >
+          <Trash2 class="h-3.5 w-3.5" />
+          Clear all
+        </Button>
+      </template>
+    </PageHeader>
+
+    <Card>
+      <CardContent class="p-0">
+        <div
+          v-if="historyStore.isLoading"
+          class="text-sm text-muted-foreground py-16 text-center"
+        >
+          Loading history…
+        </div>
+
+        <div
+          v-else-if="historyStore.entries.length === 0"
+          class="flex flex-col items-center justify-center text-sm text-muted-foreground py-16 px-6 space-y-3"
+        >
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400"
+          >
+            <History class="h-4 w-4" />
           </div>
+          <p class="text-base font-medium text-foreground">
+            No extractions yet
+          </p>
+          <p class="text-center max-w-sm">
+            Run an operation from the Operation page to start building your history.
+          </p>
           <Button
             variant="outline"
             size="sm"
-            :disabled="historyStore.entries.length === 0"
-            class="gap-1.5 text-destructive hover:text-destructive"
-            @click="isClearAllOpen = true"
+            class="mt-1"
+            @click="$router.push('/operation')"
           >
-            <Trash2 class="h-3.5 w-3.5" />
-            Clear all
+            Go to Operation
           </Button>
-        </CardHeader>
+        </div>
 
-        <CardContent>
-          <div
-            v-if="historyStore.isLoading"
-            class="text-sm text-muted-foreground py-12 text-center"
-          >
-            Loading history…
-          </div>
-
-          <div
-            v-else-if="historyStore.entries.length === 0"
-            class="text-sm text-muted-foreground py-12 text-center space-y-2"
-          >
-            <p class="text-base font-medium text-foreground">
-              No extractions yet
-            </p>
-            <p>
-              Run an operation from the Operation page to start building your history.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              class="mt-2"
-              @click="$router.push('/operation')"
-            >
-              Go to Operation
-            </Button>
-          </div>
-
-          <Table v-else>
-            <TableHeader>
-              <UiTableRow>
-                <TableHead class="w-20">
-                  Preview
-                </TableHead>
-                <TableHead>File</TableHead>
-                <TableHead>When</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Sizes / Duration</TableHead>
-                <TableHead class="text-right">
-                  Actions
-                </TableHead>
-              </UiTableRow>
-            </TableHeader>
-            <TableBody>
-              <HistoryRow
-                v-for="entry in historyStore.entries"
-                :key="entry.id"
-                :entry="entry"
-                @view="openView"
-                @delete="confirmDelete"
-              />
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+        <Table v-else>
+          <TableHeader>
+            <UiTableRow>
+              <TableHead class="w-20">
+                Preview
+              </TableHead>
+              <TableHead>File</TableHead>
+              <TableHead>When</TableHead>
+              <TableHead>Model</TableHead>
+              <TableHead>Sizes / Duration</TableHead>
+              <TableHead class="text-right">
+                Actions
+              </TableHead>
+            </UiTableRow>
+          </TableHeader>
+          <TableBody>
+            <HistoryRow
+              v-for="entry in historyStore.entries"
+              :key="entry.id"
+              :entry="entry"
+              @view="openView"
+              @delete="confirmDelete"
+            />
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
 
     <HistoryViewDialog
       :open="isViewOpen"
@@ -202,5 +220,5 @@ const handleClearAll = async () => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  </div>
+  </PageContainer>
 </template>

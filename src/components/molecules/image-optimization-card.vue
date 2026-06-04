@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { FormatChoice, MaxDimensionChoice, QualityPercentChoice } from '@/lib/image-utils'
-import { ImageDown } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
+import { ImageDown, ImagePlus, Palette, Ruler } from 'lucide-vue-next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
@@ -26,7 +25,11 @@ const format = defineModel<FormatChoice>('format', { required: true })
   <Card>
     <CardHeader>
       <CardTitle class="flex items-center gap-2">
-        <ImageDown class="h-4 w-4" />
+        <span
+          class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400"
+        >
+          <ImageDown class="h-3.5 w-3.5" />
+        </span>
         Image Optimization
       </CardTitle>
       <CardDescription>
@@ -37,8 +40,9 @@ const format = defineModel<FormatChoice>('format', { required: true })
     <CardContent class="space-y-6">
       <div class="space-y-2">
         <label
-          class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+          class="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
         >
+          <Ruler class="h-3 w-3" />
           Max Dimension (px)
         </label>
         <Select
@@ -67,11 +71,12 @@ const format = defineModel<FormatChoice>('format', { required: true })
       <div class="space-y-2">
         <div class="flex items-center justify-between">
           <label
-            class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+            class="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
           >
+            <ImagePlus class="h-3 w-3" />
             Quality
           </label>
-          <span class="text-xs font-mono text-muted-foreground">
+          <span class="text-xs font-mono text-emerald-600 dark:text-emerald-400">
             {{ qualityPercent }}%
           </span>
         </div>
@@ -82,7 +87,7 @@ const format = defineModel<FormatChoice>('format', { required: true })
           :max="QUALITY_PERCENT_CHOICES[QUALITY_PERCENT_CHOICES.length - 1]"
           step="5"
           list="quality-stops"
-          class="w-full accent-primary"
+          class="w-full accent-emerald-500"
         >
         <datalist id="quality-stops">
           <option
@@ -96,27 +101,38 @@ const format = defineModel<FormatChoice>('format', { required: true })
         </p>
       </div>
 
-      <div class="flex items-center justify-between gap-4">
-        <div class="space-y-1">
-          <label
-            class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+      <div class="flex items-center justify-between gap-4 rounded-md border border-border/60 bg-muted/30 px-4 py-3">
+        <div class="flex items-start gap-3 min-w-0">
+          <span
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400"
           >
-            Convert to Grayscale
-          </label>
-          <p class="text-xs text-muted-foreground">
-            Best for OCR of underlined text. Disable if your underlines are
-            color-coded.
-          </p>
+            <Palette class="h-3.5 w-3.5" />
+          </span>
+          <div class="space-y-0.5 min-w-0">
+            <p class="text-sm font-medium">
+              Convert to Grayscale
+            </p>
+            <p class="text-xs text-muted-foreground">
+              Best for OCR of underlined text. Disable if your underlines are
+              color-coded.
+            </p>
+          </div>
         </div>
-        <Button
+        <button
           type="button"
-          :variant="grayscale ? 'default' : 'outline'"
-          size="sm"
-          class="min-w-20"
+          role="switch"
+          :aria-checked="grayscale"
+          class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-transparent transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          :class="grayscale
+            ? 'bg-emerald-500'
+            : 'bg-input'"
           @click="grayscale = !grayscale"
         >
-          {{ grayscale ? 'On' : 'Off' }}
-        </Button>
+          <span
+            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow ring-0 transition duration-200"
+            :class="grayscale ? 'translate-x-5' : 'translate-x-0.5'"
+          />
+        </button>
       </div>
 
       <div class="space-y-2">
@@ -135,7 +151,7 @@ const format = defineModel<FormatChoice>('format', { required: true })
               :key="f"
               :value="f"
             >
-              {{ f.toUpperCase() }}
+              <span class="font-mono">{{ f.toUpperCase() }}</span>
             </SelectItem>
           </SelectContent>
         </Select>

@@ -17,7 +17,7 @@ const rendered = computed<string>(() => {
 
 <template>
   <div
-    class="prose prose-sm dark:prose-invert max-w-none prose-emerald"
+    class="prose prose-sm dark:prose-invert max-w-none prose-emerald leading-relaxed prose-headings:tracking-tight prose-headings:font-semibold prose-p:my-2 prose-pre:bg-muted prose-pre:border prose-pre:border-border/60"
     v-html="rendered"
   />
 </template>

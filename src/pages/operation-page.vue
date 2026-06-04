@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { Image as ImageIcon } from 'lucide-vue-next'
+import { Image as ImageIcon, RotateCcw } from 'lucide-vue-next'
 import { ref } from 'vue'
 import OperationFileUpload from '@/components/molecules/operation-file-upload.vue'
+import PageContainer from '@/components/molecules/page-container.vue'
+import PageHeader from '@/components/molecules/page-header.vue'
 import OperationImageListItem from '@/components/organisms/operation-image-list-item.vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -131,67 +133,72 @@ const resetAll = () => {
 </script>
 
 <template>
-  <div class="min-h-full bg-background p-6">
-    <div class="max-w-5xl mx-auto space-y-6">
-      <Card>
-        <CardContent class="pt-6">
-          <div class="flex items-center gap-2 mb-6">
-            <ImageIcon class="h-5 w-5 text-emerald-500" />
-            <h1 class="text-2xl font-bold tracking-tight">
-              Operation
-            </h1>
-          </div>
+  <PageContainer>
+    <PageHeader>
+      <template #icon>
+        <ImageIcon class="h-4 w-4" />
+      </template>
+      Operation
+      <template #description>
+        Upload one or more images to extract underlined text using your configured
+        Gemini model. All processing happens locally in your browser.
+      </template>
+    </PageHeader>
 
-          <div
-            v-if="pageState === 'idle'"
-            class="transition-all duration-300 ease-in-out"
-          >
-            <OperationFileUpload
-              v-model:files="files"
-              v-model:preview-urls="previewUrls"
-              :api-key="geminiStore.apiKey"
-              @click:extract="startExtraction"
-              @click:remove-file="handleRemoveFile"
-            />
-          </div>
+    <Card v-if="pageState === 'idle'">
+      <CardContent>
+        <OperationFileUpload
+          v-model:files="files"
+          v-model:preview-urls="previewUrls"
+          :api-key="geminiStore.apiKey"
+          @click:extract="startExtraction"
+          @click:remove-file="handleRemoveFile"
+        />
+      </CardContent>
+    </Card>
 
-          <div
-            v-else
-            class="space-y-4 animate-in fade-in slide-in-from-bottom-4"
-          >
-            <div class="flex items-center justify-between border-b pb-4">
-              <h2 class="text-2xl font-bold tracking-tight">
-                Extraction Results ({{ items.length }})
-              </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                @click="resetAll"
-              >
-                Start Over
-              </Button>
-            </div>
+    <div
+      v-else
+      class="space-y-4"
+    >
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div class="space-y-0.5">
+          <h2 class="text-lg font-semibold tracking-tight">
+            Extraction Results
+            <span class="text-muted-foreground font-normal">({{ items.length }})</span>
+          </h2>
+          <p class="text-xs text-muted-foreground">
+            Review the response for each uploaded image. Failed items can be retried individually.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          class="gap-1.5"
+          @click="resetAll"
+        >
+          <RotateCcw class="h-3.5 w-3.5" />
+          Start Over
+        </Button>
+      </div>
 
-            <div class="space-y-3">
-              <OperationImageListItem
-                v-for="item in items"
-                :key="item.id"
-                :file="item.file"
-                :preview-url="item.previewUrl"
-                :state="item.state"
-                :response="item.response"
-                :error="item.error"
-                :original-size="item.originalSize"
-                :optimized-size="item.optimizedSize"
-                :saved-percent="item.savedPercent"
-                :optimized-width="item.optimizedWidth"
-                :optimized-height="item.optimizedHeight"
-                @click:retry="retryItem(item.id)"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div class="space-y-3">
+        <OperationImageListItem
+          v-for="item in items"
+          :key="item.id"
+          :file="item.file"
+          :preview-url="item.previewUrl"
+          :state="item.state"
+          :response="item.response"
+          :error="item.error"
+          :original-size="item.originalSize"
+          :optimized-size="item.optimizedSize"
+          :saved-percent="item.savedPercent"
+          :optimized-width="item.optimizedWidth"
+          :optimized-height="item.optimizedHeight"
+          @click:retry="retryItem(item.id)"
+        />
+      </div>
     </div>
-  </div>
+  </PageContainer>
 </template>

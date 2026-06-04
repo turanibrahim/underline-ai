@@ -81,59 +81,74 @@ const downloadImage = () => {
     :open="open"
     @update:open="(v: boolean) => emit('update:open', v)"
   >
-    <DialogContent class="max-w-4xl max-h-[90vh] flex flex-col">
-      <DialogHeader>
-        <DialogTitle class="truncate" :title="entry?.fileName">
+    <DialogContent class="max-w-4xl max-h-[90vh] flex flex-col gap-4 p-6">
+      <DialogHeader class="space-y-1.5">
+        <DialogTitle
+          class="truncate text-base font-semibold"
+          :title="entry?.fileName"
+        >
           {{ entry?.fileName }}
         </DialogTitle>
         <DialogDescription v-if="entry">
-          {{ formatTimestamp(entry.timestamp) }} · {{ entry.model }} · {{ entry.fileName }}
+          {{ formatTimestamp(entry.timestamp) }} ·
+          <span class="font-mono">{{ entry.model }}</span>
         </DialogDescription>
       </DialogHeader>
 
-      <div v-if="entry" class="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0 flex-1">
+      <div
+        v-if="entry"
+        class="flex items-center justify-end gap-1.5 -mt-2"
+      >
+        <Button
+          variant="ghost"
+          size="sm"
+          class="gap-1.5 h-8"
+          @click="downloadImage"
+        >
+          <Download class="h-3.5 w-3.5" />
+          Download image
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="gap-1.5 h-8"
+          @click="copyResponse"
+        >
+          <Check
+            v-if="justCopied"
+            class="h-3.5 w-3.5 text-emerald-500"
+          />
+          <Copy
+            v-else
+            class="h-3.5 w-3.5"
+          />
+          {{ justCopied ? 'Copied' : 'Copy response' }}
+        </Button>
+      </div>
+
+      <div
+        v-if="entry"
+        class="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0 flex-1"
+      >
         <div class="flex flex-col gap-2 min-h-0">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Image
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="gap-1.5 h-7"
-              @click="downloadImage"
-            >
-              <Download class="h-3.5 w-3.5" />
-              Download
-            </Button>
-          </div>
-          <div class="flex-1 min-h-48 max-h-72 bg-muted/30 rounded-md overflow-hidden flex items-center justify-center">
+          <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Image
+          </span>
+          <div class="flex-1 min-h-48 max-h-80 bg-muted/30 rounded-lg overflow-hidden flex items-center justify-center border border-border/60">
             <img
               v-if="previewUrl"
               :src="previewUrl"
               :alt="entry.fileName"
-              class="max-h-72 max-w-full object-contain"
+              class="max-h-80 max-w-full object-contain"
             >
           </div>
         </div>
 
         <div class="flex flex-col gap-2 min-h-0">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Response
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="gap-1.5 h-7"
-              @click="copyResponse"
-            >
-              <Check v-if="justCopied" class="h-3.5 w-3.5 text-emerald-500" />
-              <Copy v-else class="h-3.5 w-3.5" />
-              {{ justCopied ? 'Copied' : 'Copy' }}
-            </Button>
-          </div>
-          <div class="flex-1 min-h-48 max-h-72 overflow-auto rounded-md border bg-background p-3">
+          <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Response
+          </span>
+          <div class="flex-1 min-h-48 max-h-80 overflow-auto rounded-lg border border-border/60 bg-background p-3">
             <MarkdownView :source="entry.response" />
           </div>
         </div>

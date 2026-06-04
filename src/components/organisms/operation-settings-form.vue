@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Save } from 'lucide-vue-next'
+import { Check, Save } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
 import GeminiSettingsCard from '@/components/molecules/gemini-settings-card.vue'
 import ImageOptimizationCard from '@/components/molecules/image-optimization-card.vue'
@@ -59,17 +59,29 @@ const handleSave = (): void => {
       v-model:format="formatInput"
     />
 
-    <div class="flex items-center gap-3">
-      <Button
-        :disabled="!apiKeyInput.trim()"
-        @click="handleSave"
-      >
-        <Save class="h-4 w-4 mr-2" />
-        Save Settings
-      </Button>
-      <span v-if="saved" class="text-sm text-emerald-600 dark:text-emerald-400">
-        Saved.
-      </span>
+    <div
+      class="sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-card/85 px-4 py-3 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/70"
+    >
+      <p class="text-xs text-muted-foreground">
+        Changes are kept locally until you save.
+      </p>
+      <div class="flex items-center gap-3">
+        <span
+          class="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 transition-opacity duration-200"
+          :class="saved ? 'opacity-100' : 'opacity-0'"
+        >
+          <Check class="h-3.5 w-3.5" />
+          Saved.
+        </span>
+        <Button
+          :disabled="!apiKeyInput.trim()"
+          class="gap-1.5"
+          @click="handleSave"
+        >
+          <Save class="h-4 w-4" />
+          Save Settings
+        </Button>
+      </div>
     </div>
   </div>
 </template>

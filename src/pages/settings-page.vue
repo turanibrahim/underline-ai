@@ -1,23 +1,23 @@
 <script setup lang="ts">
+import { Settings as SettingsIcon } from 'lucide-vue-next'
+import PageContainer from '@/components/molecules/page-container.vue'
+import PageHeader from '@/components/molecules/page-header.vue'
 import OperationSettingsForm from '@/components/organisms/operation-settings-form.vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 </script>
 
 <template>
-  <div class="min-h-full bg-background p-6">
-    <div class="max-w-3xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Settings</CardTitle>
-          <CardDescription>
-            Configure your Gemini credentials, model, and image optimization
-            options. All values are stored locally in your browser.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <OperationSettingsForm />
-        </CardContent>
-      </Card>
-    </div>
-  </div>
+  <PageContainer>
+    <PageHeader>
+      <template #icon>
+        <SettingsIcon class="h-4 w-4" />
+      </template>
+      Settings
+      <template #description>
+        Configure your Gemini credentials, model, and image optimization
+        options. All values are stored locally in your browser.
+      </template>
+    </PageHeader>
+
+    <OperationSettingsForm />
+  </PageContainer>
 </template>

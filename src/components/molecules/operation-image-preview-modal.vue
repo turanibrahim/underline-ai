@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import { X } from 'lucide-vue-next'
-import { onBeforeUnmount, watch } from 'vue'
+import { Download } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
-defineProps<{
+const props = defineProps<{
   src: string
   alt: string
   title: string
@@ -11,72 +17,59 @@ defineProps<{
 
 const open = defineModel<boolean>('open', { required: true })
 
-const close = () => {
-  open.value = false
+const downloadImage = () => {
+  if (!props.src)
+    return
+  const link = document.createElement('a')
+  link.href = props.src
+  link.download = props.title
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
-
-const onBackdropClick = (event: MouseEvent) => {
-  if (event.target === event.currentTarget)
-    close()
-}
-
-const onKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape')
-    close()
-}
-
-watch(open, (isOpen) => {
-  if (isOpen) {
-    document.addEventListener('keydown', onKeydown)
-    document.body.style.overflow = 'hidden'
-  }
-  else {
-    document.removeEventListener('keydown', onKeydown)
-    document.body.style.overflow = ''
-  }
-}, { immediate: true })
-
-onBeforeUnmount(() => {
-  document.removeEventListener('keydown', onKeydown)
-  document.body.style.overflow = ''
-})
 </script>
 
 <template>
-  <Teleport to="body">
-    <div
-      v-if="open"
-      class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 p-4 animate-in fade-in"
-      role="dialog"
-      aria-modal="true"
-      :aria-label="title"
-      @click="onBackdropClick"
+  <Dialog
+    :open="open"
+    @update:open="(v: boolean) => open = v"
+  >
+    <DialogContent
+      class="max-w-5xl w-[min(95vw,1100px)] p-0 overflow-hidden gap-0 bg-background"
     >
-      <div class="absolute top-4 right-4 flex items-center gap-2">
-        <span class="text-xs text-white/80 hidden sm:inline">
-          Press Esc to close
-        </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="text-white hover:bg-white/10 hover:text-white"
-          aria-label="Close preview"
-          @click="close"
+      <DialogHeader class="sr-only">
+        <DialogTitle>{{ title }}</DialogTitle>
+        <DialogDescription>{{ alt }}</DialogDescription>
+      </DialogHeader>
+
+      <div class="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-2.5 bg-muted/30">
+        <span
+          class="text-sm font-medium truncate"
+          :title="title"
         >
-          <X class="h-5 w-5" />
-        </Button>
+          {{ title }}
+        </span>
+        <div class="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            class="gap-1.5 h-7"
+            @click="downloadImage"
+          >
+            <Download class="h-3.5 w-3.5" />
+            Download
+          </Button>
+        </div>
       </div>
 
-      <div class="w-full max-w-5xl flex flex-col items-center gap-3">
-        <h2 class="text-sm font-medium text-white/90 truncate max-w-full" :title="title">
-          {{ title }}
-        </h2>
+      <div class="flex items-center justify-center bg-muted/40 p-4 max-h-[80vh]">
         <img
+          v-if="src"
           :src="src"
           :alt="alt"
-          class="max-h-[85vh] max-w-full object-contain rounded-md shadow-2xl"
+          class="max-h-[75vh] max-w-full object-contain rounded-md shadow-sm"
         >
       </div>
-    </div>
-  </Teleport>
+    </DialogContent>
+  </Dialog>
 </template>

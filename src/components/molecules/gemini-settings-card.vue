@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Eye, EyeOff } from 'lucide-vue-next'
+import { Eye, EyeOff, KeyRound, Sparkles, Terminal } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -31,7 +31,14 @@ const showKey = ref(false)
 <template>
   <Card>
     <CardHeader>
-      <CardTitle>Settings</CardTitle>
+      <CardTitle class="flex items-center gap-2">
+        <span
+          class="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400"
+        >
+          <Sparkles class="h-3.5 w-3.5" />
+        </span>
+        Gemini Configuration
+      </CardTitle>
       <CardDescription>
         Configure your Google Gemini API key, model, and extraction prompt.
         All values are stored locally in your browser.
@@ -40,26 +47,38 @@ const showKey = ref(false)
     <CardContent class="space-y-6">
       <div class="space-y-2">
         <label
-          class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+          for="gemini-api-key"
+          class="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
         >
+          <KeyRound class="h-3 w-3" />
           Google Gemini API Key
         </label>
         <div class="relative">
           <Input
+            id="gemini-api-key"
             v-model="apiKey"
             :type="showKey ? 'text' : 'password'"
             placeholder="AIzaSy..."
             class="font-mono pr-10"
+            autocomplete="off"
+            spellcheck="false"
           />
           <Button
             type="button"
             variant="ghost"
             size="icon"
             class="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+            :aria-label="showKey ? 'Hide API key' : 'Show API key'"
             @click="showKey = !showKey"
           >
-            <EyeOff v-if="showKey" class="h-4 w-4 text-muted-foreground" />
-            <Eye v-else class="h-4 w-4 text-muted-foreground" />
+            <EyeOff
+              v-if="showKey"
+              class="h-4 w-4 text-muted-foreground"
+            />
+            <Eye
+              v-else
+              class="h-4 w-4 text-muted-foreground"
+            />
           </Button>
         </div>
         <p class="text-xs text-muted-foreground">
@@ -70,11 +89,15 @@ const showKey = ref(false)
 
       <div class="space-y-2">
         <label
+          for="gemini-model"
           class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
         >
           Model
         </label>
-        <Select v-model="model">
+        <Select
+          id="gemini-model"
+          v-model="model"
+        >
           <SelectTrigger class="w-full">
             <SelectValue placeholder="Select a model" />
           </SelectTrigger>
@@ -92,16 +115,23 @@ const showKey = ref(false)
 
       <div class="space-y-2">
         <label
-          class="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
+          for="gemini-prompt"
+          class="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider"
         >
+          <Terminal class="h-3 w-3" />
           System Prompt
         </label>
         <Textarea
+          id="gemini-prompt"
           v-model="prompt"
           :rows="10"
-          class="font-mono text-sm"
+          class="font-mono text-sm leading-relaxed"
           placeholder="Describe how the model should process the images…"
         />
+        <p class="text-xs text-muted-foreground">
+          Sent to Gemini on every extraction. Be specific about the desired
+          output format.
+        </p>
       </div>
     </CardContent>
   </Card>
