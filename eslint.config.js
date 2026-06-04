@@ -21,4 +21,21 @@ export default antfu(
       'vue/custom-event-name-casing': 'off',
     },
   },
+  {
+    files: ['src/**/*.{ts,vue}'],
+    rules: {
+      'antfu/top-level-function': 'off',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'FunctionDeclaration',
+          message: 'Use arrow functions instead of function declarations.',
+        },
+        {
+          selector: 'FunctionExpression:not(MethodDefinition > FunctionExpression):not(ArrowFunctionExpression > FunctionExpression)',
+          message: 'Use arrow functions instead of function expressions.',
+        },
+      ],
+    },
+  },
 )

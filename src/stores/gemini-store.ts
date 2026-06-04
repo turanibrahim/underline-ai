@@ -39,25 +39,25 @@ export const useGeminiStore = defineStore('gemini', () => {
   }
   aiService.setSystemPrompt(systemPrompt.value)
 
-  function setApiKey(rawKey: string): void {
+  const setApiKey = (rawKey: string): void => {
     const encrypted = aiService.encryptKey(rawKey)
     encryptedKey.value = encrypted
     aiService.initializeKey(encrypted)
     localStorage.setItem(STORAGE_KEY, encrypted)
   }
 
-  function setModel(model: string): void {
+  const setModel = (model: string): void => {
     selectedModel.value = model
     localStorage.setItem(STORAGE_KEY_MODEL, model)
   }
 
-  function setSystemPrompt(prompt: string): void {
+  const setSystemPrompt = (prompt: string): void => {
     systemPrompt.value = prompt
     aiService.setSystemPrompt(prompt)
     localStorage.setItem(STORAGE_KEY_PROMPT, prompt)
   }
 
-  function clearApiKey(): void {
+  const clearApiKey = (): void => {
     encryptedKey.value = ''
     localStorage.removeItem(STORAGE_KEY)
   }

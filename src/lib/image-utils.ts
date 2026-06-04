@@ -37,7 +37,7 @@ export type MaxDimensionChoice = typeof MAX_DIMENSION_CHOICES[number]
 export type FormatChoice = typeof FORMAT_CHOICES[number]
 export type QualityPercentChoice = typeof QUALITY_PERCENT_CHOICES[number]
 
-export function resolveOptions(opts?: OptimizerOptions): ResolvedOptions {
+export const resolveOptions = (opts?: OptimizerOptions): ResolvedOptions => {
   return {
     maxDimension: opts?.maxDimension ?? DEFAULT_OPTIONS.maxDimension,
     quality: opts?.quality ?? DEFAULT_OPTIONS.quality,
@@ -46,11 +46,11 @@ export function resolveOptions(opts?: OptimizerOptions): ResolvedOptions {
   }
 }
 
-export function calculateTargetSize(
+export const calculateTargetSize = (
   srcW: number,
   srcH: number,
   maxDim: number,
-): { w: number, h: number } {
+): { w: number, h: number } => {
   if (srcW <= maxDim && srcH <= maxDim)
     return { w: srcW, h: srcH }
   const ratio = Math.min(maxDim / srcW, maxDim / srcH)
@@ -60,21 +60,21 @@ export function calculateTargetSize(
   }
 }
 
-export function createCanvas(w: number, h: number): HTMLCanvasElement {
+export const createCanvas = (w: number, h: number): HTMLCanvasElement => {
   const c = document.createElement('canvas')
   c.width = w
   c.height = h
   return c
 }
 
-export function getCanvasContext(c: HTMLCanvasElement): CanvasRenderingContext2D {
+export const getCanvasContext = (c: HTMLCanvasElement): CanvasRenderingContext2D => {
   const ctx = c.getContext('2d')
   if (!ctx)
     throw new Error('Failed to obtain 2D canvas context.')
   return ctx
 }
 
-export function formatBytes(bytes: number): string {
+export const formatBytes = (bytes: number): string => {
   if (!Number.isFinite(bytes) || bytes < 0)
     return '0 B'
   if (bytes < 1024)

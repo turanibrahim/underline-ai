@@ -20,7 +20,7 @@ const STORAGE_KEY_QUALITY = 'optimizer.quality'
 const STORAGE_KEY_GRAYSCALE = 'optimizer.grayscale'
 const STORAGE_KEY_FORMAT = 'optimizer.format'
 
-function readNumber<T extends number>(key: string, fallback: T, allowed: readonly T[]): T {
+const readNumber = <T extends number>(key: string, fallback: T, allowed: readonly T[]): T => {
   const raw = localStorage.getItem(key)
   if (raw === null || raw === '')
     return fallback
@@ -28,14 +28,14 @@ function readNumber<T extends number>(key: string, fallback: T, allowed: readonl
   return allowed.includes(n as T) ? (n as T) : fallback
 }
 
-function readBoolean(key: string, fallback: boolean): boolean {
+const readBoolean = (key: string, fallback: boolean): boolean => {
   const raw = localStorage.getItem(key)
   if (raw === null)
     return fallback
   return raw === 'true'
 }
 
-function readFormat(): FormatChoice {
+const readFormat = (): FormatChoice => {
   const raw = localStorage.getItem(STORAGE_KEY_FORMAT)
   return raw === 'webp' ? 'webp' : 'jpeg'
 }
@@ -51,7 +51,7 @@ export const useOptimizerStore = defineStore('optimizer', () => {
   const grayscale = ref<boolean>(readBoolean(STORAGE_KEY_GRAYSCALE, DEFAULT_GRAYSCALE))
   const format = ref<FormatChoice>(readFormat())
 
-  function asOptions(): ResolvedOptions {
+  const asOptions = (): ResolvedOptions => {
     return {
       maxDimension: maxDimension.value,
       quality: quality.value,
@@ -60,14 +60,14 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     }
   }
 
-  function setMaxDimension(v: MaxDimensionChoice): void {
+  const setMaxDimension = (v: MaxDimensionChoice): void => {
     if (MAX_DIMENSION_CHOICES.includes(v)) {
       maxDimension.value = v
       localStorage.setItem(STORAGE_KEY_MAX_DIM, String(v))
     }
   }
 
-  function setQuality(percent: number): void {
+  const setQuality = (percent: number): void => {
     const rounded = Math.round(percent)
     const snapped: QualityPercentChoice = QUALITY_PERCENT_CHOICES.reduce((prev, curr) =>
       Math.abs(curr - rounded) < Math.abs(prev - rounded) ? curr : prev,
@@ -77,12 +77,12 @@ export const useOptimizerStore = defineStore('optimizer', () => {
     localStorage.setItem(STORAGE_KEY_QUALITY, String(snapped))
   }
 
-  function setGrayscale(v: boolean): void {
+  const setGrayscale = (v: boolean): void => {
     grayscale.value = v
     localStorage.setItem(STORAGE_KEY_GRAYSCALE, String(v))
   }
 
-  function setFormat(v: FormatChoice): void {
+  const setFormat = (v: FormatChoice): void => {
     if (FORMAT_CHOICES.includes(v)) {
       format.value = v
       localStorage.setItem(STORAGE_KEY_FORMAT, v)

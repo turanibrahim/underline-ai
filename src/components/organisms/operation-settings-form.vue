@@ -27,7 +27,7 @@ watch(
   },
 )
 
-function handleSave(): void {
+const handleSave = (): void => {
   if (apiKeyInput.value.trim())
     geminiStore.setApiKey(apiKeyInput.value.trim())
   if (modelInput.value)

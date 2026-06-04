@@ -44,7 +44,7 @@ const previewUrls = ref<string[]>([])
 const items = ref<ImageItem[]>([])
 let nextId = 1
 
-function handleRemoveFile(index: number) {
+const handleRemoveFile = (index: number) => {
   if (previewUrls.value[index]) {
     URL.revokeObjectURL(previewUrls.value[index])
   }
@@ -52,7 +52,7 @@ function handleRemoveFile(index: number) {
   previewUrls.value.splice(index, 1)
 }
 
-async function ensureOptimized(item: ImageItem): Promise<File> {
+const ensureOptimized = async (item: ImageItem): Promise<File> => {
   if (item.optimizedFile)
     return item.optimizedFile
   const result = await imageOptimizerService.optimize(item.file, optimizerStore.asOptions())
@@ -65,7 +65,7 @@ async function ensureOptimized(item: ImageItem): Promise<File> {
   return result.file
 }
 
-async function runForItem(item: ImageItem) {
+const runForItem = async (item: ImageItem) => {
   item.error = undefined
   try {
     item.state = 'optimizing'
@@ -83,7 +83,7 @@ async function runForItem(item: ImageItem) {
   }
 }
 
-async function startExtraction() {
+const startExtraction = async () => {
   if (!files.value.length || !geminiStore.apiKey)
     return
 
@@ -102,13 +102,13 @@ async function startExtraction() {
   )
 }
 
-function retryItem(id: number) {
+const retryItem = (id: number) => {
   const item = items.value.find(i => i.id === id)
   if (item)
     runForItem(item)
 }
 
-function resetAll() {
+const resetAll = () => {
   for (const url of previewUrls.value) {
     URL.revokeObjectURL(url)
   }

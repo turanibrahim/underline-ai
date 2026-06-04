@@ -11,16 +11,16 @@ defineProps<{
   title: string
 }>()
 
-function close() {
+const close = () => {
   open.value = false
 }
 
-function onBackdropClick(event: MouseEvent) {
+const onBackdropClick = (event: MouseEvent) => {
   if (event.target === event.currentTarget)
     close()
 }
 
-function onKeydown(event: KeyboardEvent) {
+const onKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape')
     close()
 }

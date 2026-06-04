@@ -20,7 +20,7 @@ const previewUrls = defineModel<string[]>('previewUrls', {
   required: true,
 })
 
-function onInputChange(event: Event) {
+const onInputChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (!target.files || target.files.length === 0)
     return
