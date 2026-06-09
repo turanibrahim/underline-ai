@@ -35,14 +35,14 @@ const downloadImage = () => {
     @update:open="(v: boolean) => open = v"
   >
     <DialogContent
-      class="max-w-5xl w-[min(95vw,1100px)] p-0 overflow-hidden gap-0 bg-background"
+      class="max-w-5xl! md:w-[min(95vw,1100px)] p-0 overflow-hidden gap-0 bg-background"
     >
       <DialogHeader class="sr-only">
         <DialogTitle>{{ title }}</DialogTitle>
         <DialogDescription>{{ alt }}</DialogDescription>
       </DialogHeader>
 
-      <div class="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-2.5 bg-muted/30">
+      <div class="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-2.5 bg-muted/30 w-full">
         <span
           class="text-sm font-medium truncate"
           :title="title"

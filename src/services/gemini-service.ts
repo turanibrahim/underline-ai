@@ -1,11 +1,14 @@
+import type { QueueStatus } from './queue-service'
 import { GoogleGenAI } from '@google/genai'
 import * as CryptoJS from 'crypto-js'
+import { QueueService } from './queue-service'
 
 const OBFUSCATION_SECRET = 'gemini-extractor-local-salt-v1'
 
 class AIService {
   private decryptedApiKey: string = ''
   private systemPrompt: string = ''
+  private queue = new QueueService(5000)
 
   public encryptKey(rawKey: string): string {
     const encryptedKey = CryptoJS.AES.encrypt(rawKey, OBFUSCATION_SECRET).toString()
@@ -55,7 +58,11 @@ class AIService {
     })
   }
 
-  public async generate(images: File[], model: string): Promise<string> {
+  public async generate(
+    images: File[],
+    model: string,
+    onStatus?: (status: QueueStatus) => void,
+  ): Promise<string> {
     if (!this.decryptedApiKey) {
       return Promise.reject(new Error('API Key is missing. Please initialize the service.'))
     }
@@ -68,20 +75,24 @@ class AIService {
       return Promise.reject(new Error('Model is not selected.'))
     }
 
+    return this.queue.enqueue(async () => this.makeRequest(images, model), onStatus)
+  }
+
+  private async makeRequest(images: File[], model: string): Promise<string> {
+    const ai = new GoogleGenAI({ apiKey: this.decryptedApiKey })
+    const imageParts = await Promise.all(images.map(async img => this.fileToGenerativePart(img)))
+
+    const contents = [
+      {
+        role: 'user',
+        parts: [
+          ...(this.systemPrompt ? [{ text: this.systemPrompt }] : []),
+          ...imageParts,
+        ],
+      },
+    ]
+
     try {
-      const ai = new GoogleGenAI({ apiKey: this.decryptedApiKey })
-      const imageParts = await Promise.all(images.map(async img => this.fileToGenerativePart(img)))
-
-      const contents = [
-        {
-          role: 'user',
-          parts: [
-            ...(this.systemPrompt ? [{ text: this.systemPrompt }] : []),
-            ...imageParts,
-          ],
-        },
-      ]
-
       const response = await ai.models.generateContent({
         model,
         contents,

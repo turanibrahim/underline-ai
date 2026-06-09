@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { formatBytes } from '@/lib/image-utils'
 import { cn } from '@/lib/utils'
 
-type ItemState = 'pending' | 'optimizing' | 'loading' | 'success' | 'error'
+type ItemState = 'pending' | 'optimizing' | 'queued' | 'loading' | 'success' | 'error'
 
 const props = defineProps<{
   file: File
@@ -40,6 +40,8 @@ const stateMeta = computed<{
   switch (props.state) {
     case 'optimizing':
       return { label: 'Optimizing', variant: 'secondary', icon: Loader2, spinning: true }
+    case 'queued':
+      return { label: 'Queued', variant: 'outline', icon: Loader2, spinning: false }
     case 'loading':
       return { label: 'Processing', variant: 'secondary', icon: Loader2, spinning: true }
     case 'success':
@@ -130,7 +132,7 @@ const optimizationSummary = computed<string | null>(() => {
           Response
         </span>
         <Button
-          v-if="state !== 'loading' && state !== 'optimizing'"
+          v-if="state !== 'loading' && state !== 'optimizing' && state !== 'queued'"
           variant="ghost"
           size="sm"
           class="gap-1.5 h-7"
@@ -148,6 +150,13 @@ const optimizationSummary = computed<string | null>(() => {
         >
           <Loader2 class="h-4 w-4 animate-spin" />
           Optimizing for AI…
+        </div>
+        <div
+          v-else-if="state === 'queued'"
+          class="flex items-center gap-2 text-sm text-muted-foreground h-full justify-center"
+        >
+          <Loader2 class="h-4 w-4" />
+          Waiting in queue…
         </div>
         <div
           v-else-if="state === 'loading'"

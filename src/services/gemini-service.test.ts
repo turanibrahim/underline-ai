@@ -11,6 +11,26 @@ vi.mock('@google/genai', () => ({
   GoogleGenAI: GoogleGenAIMock,
 }))
 
+const { enqueueMock } = vi.hoisted(() => {
+  const enqueue = vi.fn(
+    async (executor: () => Promise<string>, onStatus?: (status: string) => void) => {
+      onStatus?.('queued')
+      onStatus?.('processing')
+      return executor()
+    },
+  )
+  return { enqueueMock: enqueue }
+})
+
+vi.mock('@/services/queue-service', () => {
+  const QueueService = vi.fn(
+    class {
+      enqueue = enqueueMock
+    },
+  )
+  return { QueueService }
+})
+
 beforeEach(() => {
   generateContent.mockReset()
   GoogleGenAIMock.mockClear()
@@ -78,5 +98,16 @@ describe('aiService.generate', () => {
     generateContent.mockRejectedValue(new Error('boom'))
     const file = new File([new Uint8Array([0])], 'a.png', { type: 'image/png' })
     await expect(aiService.generate([file], 'gemini-3.5-flash')).rejects.toThrow('boom')
+  })
+
+  it('passes onStatus callback to the queue', async () => {
+    aiService.initializeKey(aiService.encryptKey('raw'))
+    generateContent.mockResolvedValue({ text: 'ok' })
+    const statuses: string[] = []
+
+    const file = new File([new Uint8Array([0])], 'a.png', { type: 'image/png' })
+    await aiService.generate([file], 'gemini-3.5-flash', s => statuses.push(s))
+
+    expect(statuses).toEqual(['queued', 'processing'])
   })
 })

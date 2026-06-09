@@ -13,7 +13,7 @@ import { useGeminiStore } from '@/stores/gemini-store'
 import { useHistoryStore } from '@/stores/history-store'
 import { useOptimizerStore } from '@/stores/optimizer-store'
 
-type ItemState = 'pending' | 'optimizing' | 'loading' | 'success' | 'error'
+type ItemState = 'pending' | 'optimizing' | 'queued' | 'loading' | 'success' | 'error'
 type PageState = 'idle' | 'running'
 
 interface ImageItem {
@@ -68,9 +68,16 @@ const runForItem = async (item: ImageItem) => {
   try {
     item.state = 'optimizing'
     const optimized = await ensureOptimized(item)
-    item.state = 'loading'
+    item.state = 'queued'
     item.response = ''
-    const text = await aiService.generate([optimized], geminiStore.selectedModel)
+    const text = await aiService.generate(
+      [optimized],
+      geminiStore.selectedModel,
+      (status) => {
+        if (status === 'processing')
+          item.state = 'loading'
+      },
+    )
     item.response = text
     item.state = 'success'
 
